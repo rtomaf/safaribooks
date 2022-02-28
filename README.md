@@ -90,20 +90,22 @@ What worked for me is:
 Using document.cookie from the console does not include the HttpOnly cookies and they are definitely required.
 I can't work out how to access these via the console but I was able to find a way to get them that isn't too painful.
 
-    Login as usual to https://learning.oreilly.com/
-    Open the developer tools with F12
-    Go to Network tab in the developer tools
-    Access the profile page in the browser: https://learning.oreilly.com/profile/
-    In the Network tab, click on the request to /profile/ (it should be the first one)
-    Click on the Cookies tab in the request information
-    Right-click on the Request cookies text and choose Copy All
-    Paste this into the cookies.json file and then remove the outer section of the JSON document
-    Run the script without passing credentials: python3 safaribooks.py 9780135262047
+```
 
+    * Login as usual to https://learning.oreilly.com/
+    * Open the developer tools with F12
+    * Go to Network tab in the developer tools
+    * Access the profile page in the browser: https://learning.oreilly.com/profile/
+    * In the Network tab, click on the request to /profile/ (it should be the first one)
+    * Click on the Cookies tab in the request information
+    * Right-click on the Request cookies text and choose Copy All
+    * Paste this into the cookies.json file and then remove the outer section of the JSON document
+    * Run the script without passing credentials: python3 safaribooks.py 9780135262047
+```
 p.s. sudo is not necessary.
 
 Format of cookies.json should be:
-
+```
 {
   "BrowserCookie": "XXX",
   "_gcl_au": "XXX",
@@ -120,7 +122,7 @@ Format of cookies.json should be:
   "salesforce_id": "XXX",
   "sessionid": "XXX"
 }
-
+```
 
   
 Pay attention if you use a shared PC, because everyone that has access to your files can steal your session. 
