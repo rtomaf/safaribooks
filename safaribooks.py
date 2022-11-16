@@ -604,6 +604,16 @@ class SafariBooks:
             )
 
         return root
+    
+    def download_html_to_file(self, url, file_name):
+        response = self.requests_provider(url)
+        if response == 0 or response.status_code != 200:
+            self.display.exit(
+                "Crawler: error trying to retrieve this page: %s (%s)\n    From: %s" %
+                (self.filename, self.chapter_title, url)
+            )
+        with open(file_name, 'w') as file:
+            file.write(response.text)
 
     @staticmethod
     def url_is_absolute(url):
@@ -652,17 +662,34 @@ class SafariBooks:
 
         return None
 
-    def parse_html(self, root, first_page=False):
+    #def parse_html(self, root, first_page=False):
+    def parse_html(self, root, url, first_page=False):
+        
+        
         if random() > 0.8:
             if len(root.xpath("//div[@class='controls']/a/text()")):
                 self.display.exit(self.display.api_error(" "))
 
         book_content = root.xpath("//div[@id='sbo-rt-content']")
         if not len(book_content):
-            self.display.exit(
-                "Parser: book content's corrupted or not present: %s (%s)" %
-                (self.filename, self.chapter_title)
-            )
+            # self.display.exit(
+            #     "Parser: book content's corrupted or not present: %s (%s)" %
+            #     (self.filename, self.chapter_title)
+            # )
+            filename = '/tmp/ch.html'
+            self.download_html_to_file(url, filename)
+            parser = etree.HTMLParser()
+            tree = etree.parse(filename, parser)
+            book_content = tree.xpath("//div[@id='sbo-rt-content']")
+            if not len(book_content):
+                self.display.exit(
+                    "Parser: book content's corrupted or not present: %s (%s)" %
+                    (self.filename, self.chapter_title)
+                )
+            # KLUDGE(KNR): When parsing this way the resulting object has type Element
+            # instead of HtmlElement. So perform a crude conversion into the right type.
+            from lxml.html import fromstring, tostring
+            book_content[0] = html.fromstring(tostring(book_content[0]))
 
         page_css = ""
         if len(self.chapter_stylesheets):
@@ -846,7 +873,11 @@ class SafariBooks:
                     self.display.book_ad_info = 2
 
             else:
-                self.save_page_html(self.parse_html(self.get_html(next_chapter["content"]), first_page))
+                # self.save_page_html(self.parse_html(self.get_html(next_chapter["content"]), first_page))
+                chapter_ = next_chapter["content"]
+                html_ = self.get_html(chapter_)
+                parsed_page_ = self.parse_html(html_, chapter_, first_page)
+                self.save_page_html(parsed_page_)
 
             self.display.state(len_books, len_books - len(self.chapters_queue))
 
